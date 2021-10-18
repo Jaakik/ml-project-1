@@ -1,3 +1,5 @@
+import numpy as np
+
 def compute_loss_logistic(y, tx, w):
     """
     compute the cost by negative log likelihood.
@@ -28,3 +30,10 @@ def logistic_regression_step(y, tx, w):
     return the loss, gradient
     """
     return compute_loss_logistic(y, tx, w), compute_gradient_logistic(y, tx, w)
+
+
+def sigmoid(t):
+    """
+    apply sigmoid function on t.
+    """
+    return 1.0 / (1 + np.exp(-t))

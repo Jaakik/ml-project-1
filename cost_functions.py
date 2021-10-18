@@ -2,6 +2,7 @@ import numpy as np
 import numpy.linalg as la
 from train_utils import *
 
+
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """
     Logistic regression using SGD.
