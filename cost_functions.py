@@ -54,5 +54,16 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         loss += lambda_ * np.squeeze(w.T @ w)
         gradient += 2 * lambda_ * w
         w -= gamma * gradient
-
     return np.squeeze(w), compute_loss_logistic(y, tx, w)
+
+
+def least_squares(y, tx):
+    w = np.linalg.inv(tx.T.dot(tx)).dot(tx.T.dot(y))
+    err = compute_loss(y,tx,w)
+    return err, w
+
+def ridge_regression(y, tx, lambda_):
+    """implement ridge regression."""
+    w = np.linalg.inv(tx.T.dot(tx) + 2 * lambda_ * tx.shape[0] * np.identity(tx.shape[1])).dot(tx.T.dot(y))
+    err = compute_loss(y,tx,w)
+    return err, w
