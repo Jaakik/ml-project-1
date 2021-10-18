@@ -1,5 +1,29 @@
 import numpy as np
 
+def compute_MSE_linreg(y, tx, w):
+    """Calculate the cost of a linear regression model using MSE.
+
+    Parameters
+    ----------
+    y : np.array
+        vector representing the output variable 
+    tx : np.array
+        Matrix representing the input variables 
+    w : np.array
+        vector representing the parameters of the linear regression model 
+
+    Returns
+    -------
+    float
+        MSE of the linear model
+
+    """
+    N = len(y) # number of datapoints
+    e = y - np.dot(tx,w) # error vector
+    MSE = np.dot(e.T,e)/(2*N)
+    return MSE
+
+
 def compute_loss_logistic(y, tx, w):
     """
     compute the cost by negative log likelihood.
