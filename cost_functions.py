@@ -58,12 +58,10 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
 
 def least_squares(y, tx):
-    w = np.linalg.inv(tx.T.dot(tx)).dot(tx.T.dot(y))
-    err = compute_loss(y,tx,w)
-    return err, w
+    w = np.linalg.solve(tx.T.dot(tx),tx.T.dot(y))
+    return w, compute_loss(y,tx,w)
 
 def ridge_regression(y, tx, lambda_):
-    """implement ridge regression."""
-    w = np.linalg.inv(tx.T.dot(tx) + 2 * lambda_ * tx.shape[0] * np.identity(tx.shape[1])).dot(tx.T.dot(y))
+    w = np.linalg.solve(tx.T.dot(tx) + lambda_*np.eye(tx.shape[1]),tx.T.dot(y))
     err = compute_loss(y,tx,w)
     return err, w
