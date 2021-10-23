@@ -24,14 +24,6 @@ def load_csv_data(data_path, sub_sample=False):
     return yb, input_data, ids
 
 
-def predict_labels(weights, data):
-    """Generates class predictions given weights, and a test data matrix"""
-    y_pred = np.dot(data, weights)
-    y_pred[np.where(y_pred <= 0)] = -1
-    y_pred[np.where(y_pred > 0)] = 1
-
-    return y_pred
-
 
 def create_csv_submission(ids, y_pred, name):
     """
@@ -164,5 +156,19 @@ def PCA(x, threshold):
     X_pca = X.dot(projection_matrix)
 
     return X_pca
+
+def preprocess(x,y, is_pca = False, is_mean = False):
+    """preprocesses data by grouping some data util functions
+                         @input:
+                         - bool is_pca : Whether to apply PCA or not
+                         - bool is_mean : Whether to replace by mean or not
+                         - np.array(N,m) x: features
+                         - np.array(N) y: labels
+                         @output: np.array(N,m') data after preprocessing
+                         """
+
+
+
+
 
 
