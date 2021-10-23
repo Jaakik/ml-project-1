@@ -127,3 +127,42 @@ def replace_w_mean(X,y):
 
 
 
+def PCA(x, threshold):
+    """applies PCA feature reduction
+                     @input:
+                     - np.array(N,m) x: features
+                     - float (0,1) threshold for minimum percentage of data to be explained
+                        the selected principal components
+                     @output: np.array(N,m') data after PCA
+                     """
+    standardize(x)
+    covariance_matrix = np.cov(x.T)
+
+    #the principal components
+    eigen_values, eigen_vectors = np.linalg.eig(covariance_matrix)
+
+    # Calculating the explained variance on each of components
+    variance_explained = []
+    for i in eigen_values:
+        variance_explained.append((i / sum(eigen_values)) * 100)
+
+    #sorting in descending order
+    variance_explained[::-1].sort()
+
+    # Identifying components that explain at least 95%
+    cumulative_variance_explained = np.cumsum(variance_explained)
+
+    n_components = 0
+
+    while n_components < x.shape[1] and cumulative_variance_explained[n_components] < threshold :
+        n_components+=1
+
+    # Using two first components (because those explain more than threshold)
+    projection_matrix = (eigen_vectors.T[:][:n_components]).T
+
+    # Getting the product of original standardized X and the eigenvectors
+    X_pca = X.dot(projection_matrix)
+
+    return X_pca
+
+
