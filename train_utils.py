@@ -176,5 +176,13 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
-def train():
-    """Train the specified model using batching and cross validate"""
+
+def train_model(X, y, initial_w, K , MAX_ITERS, verbose=True):
+    """
+    to be implemented for training and cross validating
+    """
+
+
+
+
+
