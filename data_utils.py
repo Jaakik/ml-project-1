@@ -157,6 +157,22 @@ def PCA(x, threshold):
 
     return X_pca
 
+
+def polynomial_expansion(X, degree):
+    """ polynomial feature expansion
+    @input:
+    - np.array(N,m) X: features
+    - double degree: degree of expansion
+    @output: [1, X, X^2, X^3, etc]
+    """
+    #add bias term:
+    if not np.array_equal(X[:, 0], np.ones(len(X))):
+        X_poly = np.hstack((np.ones((len(X), 1)), X))
+    if degree>1:
+        for deg in range(2, degree+1):
+              X_poly = np.c_[X_poly, np.power(X, deg)]
+    return X_poly
+
 def preprocess(x,y, is_pca = False, is_mean = False):
     """preprocesses data by grouping some data util functions
                          @input:
