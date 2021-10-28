@@ -138,22 +138,25 @@ def PCA(x, threshold):
     for i in eigen_values:
         variance_explained.append((i / sum(eigen_values)) * 100)
 
-    #sorting in descending order
-    variance_explained[::-1].sort()
+
+
 
     # Identifying components that explain at least 95%
     cumulative_variance_explained = np.cumsum(variance_explained)
+
+    cumulative_variance_explained/=100
 
     n_components = 0
 
     while n_components < x.shape[1] and cumulative_variance_explained[n_components] < threshold :
         n_components+=1
 
+
     # Using two first components (because those explain more than threshold)
     projection_matrix = (eigen_vectors.T[:][:n_components]).T
 
     # Getting the product of original standardized X and the eigenvectors
-    X_pca = X.dot(projection_matrix)
+    X_pca = x.dot(projection_matrix)
 
     return X_pca
 
