@@ -15,6 +15,10 @@ r_pca = PCA(tx,0.95)
 
 print(r_pca.shape)
 
+r_poly = polynomial_expansion(r_pca,2)
+
+print(r_poly.shape)
+
 # intial weights
 #wi = np.ones(tx.shape[1])
 
