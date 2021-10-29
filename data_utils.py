@@ -176,6 +176,17 @@ def polynomial_expansion(X, degree):
               X_poly = np.c_[X_poly, np.power(X, deg)]
     return X_poly
 
+
+def interaction_feature_first_order(X):
+    product_features = []
+
+    for feature1 in range(X.shape[1]):
+        for feature2 in range(X.shape[1]):
+            if feature1 < feature2:
+                new_feat = X[:,feature1] * X[:,feature2]
+                product_features.append(new_feat)
+    return np.array(product_features).T
+
 def preprocess(x,y, is_pca = False, is_mean = False):
     """preprocesses data by grouping some data util functions
                          @input:
