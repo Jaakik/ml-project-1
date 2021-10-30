@@ -3,32 +3,21 @@ For running scripts
 """
 from data_utils import *
 from cost_functions import *
+from train_utils import *
 import numpy as np
 
 data_path = "/Users/marouanejaakik/Desktop/courses/ml-project-1/data/train.csv"
 
 # Raw data
-y , tx, ids = load_csv_data(data_path)
+y, x, ids = load_csv_data(data_path)
 
+print(x.shape)
 
-r_pca = PCA(tx,0.95)
+# list of lambdas put your values here
+# example
+lambdas = [0.001, 0.05]
+degrees = [2, 3, 5]
 
-print(r_pca.shape)
+best_degree, best_lamb, accu = train_grid_search(y, x, ridge_regression, lambdas,degrees, k_fold=10)
 
-r_poly = polynomial_expansion(r_pca,2)
-
-print(r_poly.shape)
-
-# intial weights
-#wi = np.ones(tx.shape[1])
-
-#local_w, loss = logistic_regression(y, tx, wi.copy(), 5, 0.01)
-
-#print(loss)
-
-
-
-
-
-
-
+print(best_degree)

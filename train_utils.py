@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def compute_MSE_linreg(y, tx, w):
     """Calculate the cost of a linear regression model using MSE.
 
@@ -18,9 +19,9 @@ def compute_MSE_linreg(y, tx, w):
         MSE of the linear model
 
     """
-    N = len(y) # number of datapoints
-    e = y - np.dot(tx,w) # error vector
-    MSE = np.dot(e.T,e)/(2*N)
+    N = len(y)  # number of datapoints
+    e = y - np.dot(tx, w)  # error vector
+    MSE = np.dot(e.T, e) / (2 * N)
     return MSE
 
 
@@ -62,9 +63,10 @@ def sigmoid(t):
     """
     return 1.0 / (1 + np.exp(-t))
 
+
 def calculate_mse(e):
     """Calculate the mse for vector e."""
-    return 1/2*np.mean(e**2)
+    return 1 / 2 * np.mean(e ** 2)
 
 
 def calculate_mae(e):
@@ -80,15 +82,26 @@ def compute_loss(y, tx, w):
     e = y - tx.dot(w)
     return calculate_mse(e)
 
+
 def predict_labels(weights, data):
-    """Generates class predictions given weights, and a test data matrix"""
+    """Generates class predictions given weights for all implementations except logistic_reg, and a test data matrix"""
     y_pred = np.dot(data, weights)
     y_pred[np.where(y_pred <= 0)] = -1
     y_pred[np.where(y_pred > 0)] = 1
 
     return y_pred
 
-def accuracy(features, w, true_y):
+
+def predict_labels_logistic(weights, data):
+    """Generates class predictions given weights for the logistic reg, and a test data matrix"""
+    y_pred = sigmoid(np.dot(data, weights))
+    y_pred[y_pred < 0.5] = -1
+    y_pred[y_pred > 0.5] = 1
+
+    return y_pred
+
+
+def accuracy_w(features, w, true_y):
     """
     accuracy: calculates the accuracy of a prediction
     @input:
@@ -98,10 +111,17 @@ def accuracy(features, w, true_y):
     @output: (TP+TN)/Total
     """
     y_pred = predict_labels(w, features)
-    #encode to 0/1
+    # encode to 0/1
     y_pred_enc = (y_pred + 1) / 2
     P_N = len(y_pred_enc[np.where(np.subtract(y_pred_enc, true_y) == 0)])
     return (P_N / len(true_y)) * 100
+
+def accuracy(y_pred, true_y):
+
+    y_pred_enc = (y_pred + 1) / 2
+    P_N = len(y_pred_enc[np.where(np.subtract(y_pred_enc, true_y) == 0)])
+    return (P_N / len(true_y)) * 100
+
 
 
 def build_k_indices(y, k_fold, seed=2):
@@ -151,38 +171,71 @@ def cross_validation_sets(tX, y, k_indices, i):
 
     return tX_train, y_train, tX_val, y_val
 
-def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
-    """
-    Generate a minibatch iterator for a dataset.
-    Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
-    Outputs an iterator which gives mini-batches of `batch_size` matching elements from `y` and `tx`.
-    Data can be randomly shuffled to avoid ordering in the original data messing with the randomness of the minibatches.
-    Example of use :
-    for minibatch_y, minibatch_tx in batch_iter(y, tx, 32):
-        <DO-SOMETHING>
-    """
-    data_size = len(y)
 
-    if shuffle:
-        shuffle_indices = np.random.permutation(np.arange(data_size))
-        shuffled_y = y[shuffle_indices]
-        shuffled_tx = tx[shuffle_indices]
-    else:
-        shuffled_y = y
-        shuffled_tx = tx
-    for batch_num in range(num_batches):
-        start_index = batch_num * batch_size
-        end_index = min((batch_num + 1) * batch_size, data_size)
-        if start_index != end_index:
-            yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
-
-
-def train_model(X, y, initial_w, K , MAX_ITERS, verbose=True):
+def train_model(x, y, opt, k_indices, k, degree, lamb, is_log):
     """
     to be implemented for training and cross validating
     """
+    mask_test = k_indices[k]
+    mask_train = np.delete(k_indices, k, axis=0).ravel()
+
+    x_train = x[mask_train, :]
+    x_test = x[mask_test, :]
+    y_train = y[mask_train]
+    y_test = y[mask_test]
+
+    # Call the preprocessing function HERE using the degree param
+
+    # compute weights using given method // if lamb is none then we are not using ridge
+    if lamb == None:
+        weights, _ = opt(y_train, x_train)
+    else:
+        weights, _ = opt(y_train, x_train, lamb)
+
+    # predict
+    if is_log == True:
+        y_train_pred = predict_labels_logistic(weights, x_train)
+        y_test_pred = predict_labels_logistic(weights, x_test)
+    else:
+        y_train_pred = predict_labels(weights, x_train)
+        y_test_pred = predict_labels(weights, x_test)
+
+    # compute accuracy for train and test data
+    acc_train = accuracy(y_train_pred, y_train)
+    acc_test = accuracy(y_test_pred, y_test)
+
+    return acc_train, acc_test
 
 
+def train_grid_search(y, x, opt,lambdas,degrees, k_fold, is_log = False):
+    """
+    gets the best hyper parameters and best opt method
+    :param y:
+    :param x:
+    :param degrees:
+    :param opt:
+    :param is_log: whether opt is logistic regression or not
+    :param lambdas:
+    :param k_fold:
+    :return:
+    """
 
+    k_indices = build_k_indices(y, k_fold)
+    comparison = []
+    #we can alos iterate over a list of opt function but this is going to take a long time between runs
+    #I prefer to do a grid search per function
+    for degree in degrees:
+        for lamb in lambdas:
+            accs_test = []
+            for k in range(k_fold):
+                _, acc_test = train_model(x, y, opt, k_indices, k, degree, lamb, is_log)
+                accs_test.append(acc_test)
+            comparison.append([degree, lamb, np.mean(accs_test)])
 
+    comparison = np.array(comparison)
+    ind_best = np.argmax(comparison[:, 2])
+    best_degree = comparison[ind_best, 0]
+    best_lamb = comparison[ind_best, 1]
+    accu = comparison[ind_best, 2]
 
+    return best_degree, best_lamb, accu
