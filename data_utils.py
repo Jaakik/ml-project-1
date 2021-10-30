@@ -237,6 +237,8 @@ def preprocess(x_train , x_test , degree):
     # Do the the same for x_train and y_test
     #Notice thata x_test will be the hold out fold in k-FOLD CROSS validation
     #you can add other parameters and you are free to do what you want here
+    x_train_processed = polynomial_expansion(x_train, degree)
+    x_test_processed = polynomial_expansion(x_test, degree)
 
     return x_train_processed , x_test_processed
 

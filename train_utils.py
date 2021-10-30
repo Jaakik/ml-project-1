@@ -1,4 +1,7 @@
 import numpy as np
+from data_utils import *
+
+
 
 
 def compute_MSE_linreg(y, tx, w):
@@ -118,9 +121,10 @@ def accuracy_w(features, w, true_y):
 
 def accuracy(y_pred, true_y):
 
-    y_pred_enc = (y_pred + 1) / 2
-    P_N = len(y_pred_enc[np.where(np.subtract(y_pred_enc, true_y) == 0)])
-    return (P_N / len(true_y)) * 100
+    #y_pred_enc = (y_pred + 1) / 2
+    #P_N = len(y_pred_enc[np.where(np.subtract(y_pred_enc, true_y) == 0)])
+    #return (P_N / len(true_y)) * 100
+    return np.sum(y_pred==true_y)/len(y_pred)
 
 
 
@@ -172,6 +176,29 @@ def cross_validation_sets(tX, y, k_indices, i):
     return tX_train, y_train, tX_val, y_val
 
 
+def preprocess(x_train , x_test , degree):
+    """
+
+        :param x_train:
+        :param x_test:
+        :param degree:
+        :return:
+        """
+    #TODO put your preprocssing here @Julien
+    #Look at how Yassine splits the data depending on the jet num
+    # replace with median / mean
+    #standardize
+    # add bias term or not / Poly-expansion / first order poly expansion
+    # Do the the same for x_train and y_test
+    #Notice thata x_test will be the hold out fold in k-FOLD CROSS validation
+    #you can add other parameters and you are free to do what you want here
+    x_train_processed = polynomial_expansion(x_train, degree)
+    x_test_processed = polynomial_expansion(x_test, degree)
+
+    return x_train_processed , x_test_processed
+
+
+
 def train_model(x, y, opt, k_indices, k, degree, lamb, is_log):
     """
     to be implemented for training and cross validating
@@ -185,6 +212,8 @@ def train_model(x, y, opt, k_indices, k, degree, lamb, is_log):
     y_test = y[mask_test]
 
     # Call the preprocessing function HERE using the degree param
+    x_train, x_test = preprocess(x_train , x_test , degree)
+    
 
     # compute weights using given method // if lamb is none then we are not using ridge
     if lamb == None:
