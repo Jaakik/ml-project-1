@@ -2,8 +2,6 @@ import numpy as np
 from data_utils import *
 
 
-
-
 def compute_MSE_linreg(y, tx, w):
     """Calculate the cost of a linear regression model using MSE.
 
@@ -119,13 +117,9 @@ def accuracy_w(features, w, true_y):
     P_N = len(y_pred_enc[np.where(np.subtract(y_pred_enc, true_y) == 0)])
     return (P_N / len(true_y)) * 100
 
+
 def accuracy(y_pred, true_y):
-
-    #y_pred_enc = (y_pred + 1) / 2
-    #P_N = len(y_pred_enc[np.where(np.subtract(y_pred_enc, true_y) == 0)])
-    #return (P_N / len(true_y)) * 100
-    return np.sum(y_pred==true_y)/len(y_pred)
-
+    return np.sum(y_pred == true_y) / len(y_pred)
 
 
 def build_k_indices(y, k_fold, seed=2):
@@ -176,33 +170,37 @@ def cross_validation_sets(tX, y, k_indices, i):
     return tX_train, y_train, tX_val, y_val
 
 
-def preprocess(x_train , x_test , degree):
+def preprocess(x_train, x_test, y, degree):
     """
 
+        :param y:
         :param x_train:
         :param x_test:
         :param degree:
         :return:
         """
-    #TODO put your preprocssing here @Julien
-    #Look at how Yassine splits the data depending on the jet num
-    # replace with median / mean
-    #standardize
-    # add bias term or not / Poly-expansion / first order poly expansion
-    # Do the the same for x_train and y_test
-    #Notice thata x_test will be the hold out fold in k-FOLD CROSS validation
-    #you can add other parameters and you are free to do what you want here
-    x_train_processed = polynomial_expansion(x_train, degree)
-    x_test_processed = polynomial_expansion(x_test, degree)
-
-    return x_train_processed , x_test_processed
+    # Train
+    x_train_processed = remove_null_features(x_train)
+    x_train_processed = median_replacement(x_train_processed, y)
+    x_train_processed = polynomial_expansion(x_train_processed, degree)
 
 
+    # Test 
+    x_test_processed = remove_null_features(x_test)
+    x_test_processed = polynomial_expansion(x_test_processed, degree)
 
-def train_model(x, y, opt, k_indices, k, degree, lamb, is_log):
+    return x_train_processed, x_test_processed
+
+
+def train_model(x, y, opt, k_indices, k, degree, lamb=None, max_iters=None, gamma=None, is_log=False):
     """
     to be implemented for training and cross validating
     """
+
+    # Initial weights
+    wi = np.ones(x.shape[1])
+
+    # Data
     mask_test = k_indices[k]
     mask_train = np.delete(k_indices, k, axis=0).ravel()
 
@@ -212,17 +210,25 @@ def train_model(x, y, opt, k_indices, k, degree, lamb, is_log):
     y_test = y[mask_test]
 
     # Call the preprocessing function HERE using the degree param
-    x_train, x_test = preprocess(x_train , x_test , degree)
-    
+    x_train, x_test = preprocess(x_train, x_test, y, degree)
 
-    # compute weights using given method // if lamb is none then we are not using ridge
-    if lamb == None:
+    # Least squares
+    if lamb is None and max_iters is None and gamma is None:
         weights, _ = opt(y_train, x_train)
-    else:
+    # ridge regression
+    elif lamb is not None and max_iters is None and gamma is None:
         weights, _ = opt(y_train, x_train, lamb)
 
-    # predict
-    if is_log == True:
+    # ridge logistic regression
+    elif max_iters is not None and gamma is not None and lamb is not None:
+        weights, _ = opt(y_train, x_train, lamb, wi, max_iters, gamma)
+
+    # Everything else
+    elif max_iters is not None and gamma is not None and lamb is None:
+        weights, _ = opt(y_train, x_train, wi, max_iters, gamma)
+
+    # predictions
+    if is_log:
         y_train_pred = predict_labels_logistic(weights, x_train)
         y_test_pred = predict_labels_logistic(weights, x_test)
     else:
@@ -236,9 +242,10 @@ def train_model(x, y, opt, k_indices, k, degree, lamb, is_log):
     return acc_train, acc_test
 
 
-def train_grid_search(y, x, opt,lambdas,degrees, k_fold, is_log = False):
+def train_grid_search(y, x, opt, lambdas, degrees, gamma, max_iters, k_fold, is_ridge=False, is_log=False):
     """
     gets the best hyper parameters and best opt method
+    :param max_iters:
     :param y:
     :param x:
     :param degrees:
@@ -251,15 +258,16 @@ def train_grid_search(y, x, opt,lambdas,degrees, k_fold, is_log = False):
 
     k_indices = build_k_indices(y, k_fold)
     comparison = []
-    #we can alos iterate over a list of opt function but this is going to take a long time between runs
-    #I prefer to do a grid search per function
-    for degree in degrees:
-        for lamb in lambdas:
-            accs_test = []
-            for k in range(k_fold):
-                _, acc_test = train_model(x, y, opt, k_indices, k, degree, lamb, is_log)
-                accs_test.append(acc_test)
-            comparison.append([degree, lamb, np.mean(accs_test)])
+    # we can also iterate over a list of opt function but this is going to take a long time between runs
+    # I prefer to do a grid search per function in this case that is the example implementation for ridge
+    if is_ridge:
+        for degree in degrees:
+            for lamb in lambdas:
+                accs_test = []
+                for k in range(k_fold):
+                    _, acc_test = train_model(x, y, opt, k_indices, k, degree, lamb, max_iters, gamma, is_log)
+                    accs_test.append(acc_test)
+                comparison.append([degree, lamb, np.mean(accs_test)])
 
     comparison = np.array(comparison)
     ind_best = np.argmax(comparison[:, 2])
