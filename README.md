@@ -4,11 +4,12 @@ You can download the challenge data following the instructions in [AiCrowd](http
 
 # Data:
 Create a data folder and place the test.csv and train.csv files following this projce folde structure :
+```directory structure
 root ── main 
       ├─ data ─── test.csv
       │       ├─ train.csv
       │                    
-
+```
 # Utils:
 Please checkout data_utils.py and train_utils.py for all the helper functions that were involved in data processing and training. 
 
