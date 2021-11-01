@@ -84,7 +84,26 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """
     Logistic regression using SGD.
-    Parameters
+    
+    
+        Parameters
+    ----------
+    y : np.array
+        vector representing the output variable 
+    tx : np.array
+        Matrix representing the input variables 
+    initial_w : np.array
+        initial weight vector
+    max_iters : int
+        number of steps to run
+    gamma : float
+        step size
+
+    Returns
+    -------
+    (w, loss)
+        Last weight vector and corresponding loss
+    
     """
     w = initial_w
     w = w[:,np.newaxis]
@@ -110,7 +129,23 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """
     Regularized logistic regression using SGD.
-    Parameters
+            Parameters
+    ----------
+    y : np.array
+        vector representing the output variable 
+    tx : np.array
+        Matrix representing the input variables 
+    initial_w : np.array
+        initial weight vector
+    max_iters : int
+        number of steps to run
+    gamma : float
+        step size
+
+    Returns
+    -------
+    (w, loss)
+        Last weight vector and corresponding loss
 
     """
     w = initial_w
@@ -136,10 +171,42 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
 
 def least_squares(y, tx):
+    """calculate the least squares solution
+
+    Parameters
+    ----------
+    y : np.array
+        vector representing the output variable 
+    tx : np.array
+        Matrix representing the input variables 
+
+    Returns
+    -------
+    (w, loss)
+        Last weight vector and corresponding loss
+
+    """
     w = np.linalg.solve(tx.T.dot(tx),tx.T.dot(y))
     return w, compute_loss(y,tx,w)
 
 def ridge_regression(y, tx, lambda_):
+    """calculate the ridge regression solution solution
+
+    Parameters
+    ----------
+    y : np.array
+        vector representing the output variable 
+    tx : np.array
+        Matrix representing the input variables
+    lambda_ : float
+        regularization parameter
+
+    Returns
+    -------
+    (w, loss)
+        Last weight vector and corresponding loss
+
+    """
     w = np.linalg.solve(tx.T.dot(tx) + lambda_*np.eye(tx.shape[1]),tx.T.dot(y))
     err = compute_loss(y,tx,w)
     return w, err
