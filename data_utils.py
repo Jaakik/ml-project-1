@@ -194,13 +194,16 @@ def add_bias(X):
 
 def split_data_jet_mask(x):
     """
-    Returns 3 masks corresponding to the rows of x where the feature 22 'PRI_jet_num'
-    is equal to 0, 1 and  2 or 3 respectively.
+    Returns 3 masks corresponding to the different groups after splitting with 'PRI_jet_num'
+    0, 1, 2 or 3 mask groups.
     """
     return x[:, 22] == 0, x[:, 22] == 1, x[:, 22] == 2, x[:, 22] == 3
 
 
 def remove_null_features(X):
+    """
+    Given a dataset, remove all features were we have missing values for all rows
+    """
     to_remove = []
     for feature in range(len(X[0])):
         values = X[:, feature]
@@ -212,6 +215,10 @@ def remove_null_features(X):
 
 
 def median_replacement(X, y):
+    """
+    Given dataset and labels replace missing values for boson and other particules with 
+    Respectively boson's median and other partiules median
+    """
     for feature in range(X.shape[1]):
         mask = np.full(len(y), False, dtype=bool) | (X[:, feature] > -999)
         median_boson = np.median(X[np.logical_and(y == -1, mask), feature])
